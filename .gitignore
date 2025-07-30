@@ -1,0 +1,59 @@
+# Binários
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+main
+mestra-golang
+
+# Arquivos de teste
+*.test
+
+# Arquivos de cobertura
+*.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# Arquivos de ambiente SENSÍVEIS - NUNCA VERSIONAR
+.env.local
+.env.production
+.env.staging
+.env.development
+
+# Arquivos de configuração específicos do ambiente
+config.local.*
+
+# Logs
+*.log
+logs/
+
+# Uploads e arquivos temporários
+uploads/*
+!uploads/.gitkeep
+tmp/
+temp/
+
+# Arquivos do sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Arquivos do editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Arquivos de backup
+*.bak
+*.backup
