@@ -1,138 +1,149 @@
-# Mestra WhatsApp Bot - Golang
+# 🚀 API Golang MESTRA
 
-Bot em Go para integração com WhatsApp que se comunica com a API .NET.
+API minimalista em Golang para processar mensagens econômicas do WhatsApp e extrair informações financeiras.
 
-## 🏗️ Estrutura do Projeto
+## 📋 Funcionalidades
 
-```
-mestra-golang/
-├── main.go                   # Ponto de entrada
-├── config/                   # Configurações (env, banco, etc)
-│   ├── database.go
-│   └── config.go
-├── controllers/              # Handlers das rotas
-│   └── message_controller.go
-├── models/                   # Modelos das mensagens e usuários
-│   └── message.go
-├── routes/                   # Definição das rotas
-│   └── routes.go
-├── services/                 # Lógica de envio/recebimento WhatsApp
-│   └── message_service.go
-├── utils/                    # Funções auxiliares
-│   └── helpers.go
-├── uploads/                  # Arquivos recebidos
-├── .env.example              # Exemplo de configuração
-└── go.mod
-```
+- ✅ Recebe mensagens via POST `/api/processar`
+- ✅ Extrai valores, descrições e datas automaticamente
+- ✅ Interpreta marcadores temporais (hoje, ontem, anteontem)
+- ✅ Salva mensagens originais no SQL Server
+- ✅ Retorna JSON estruturado com dados econômicos
 
-## ⚙️ Configuração
+## 🛠️ Tecnologias
 
-### 1. Configuração do Ambiente
+- **Linguagem**: Go 1.21+
+- **Framework**: Gin
+- **Banco**: SQL Server
+- **ORM**: GORM
 
-Copie o arquivo de exemplo e configure suas variáveis:
+## ⚡ Instalação Rápida
 
+1. **Clone e configure**:
 ```bash
-cp .env.example .env.local
+cd mestra-golang
+cp .env.example .env
 ```
 
-### 2. Configuração do Banco de Dados
-
-No `.env.local`, configure as variáveis:
-
-```bash
-# Configurações do Banco de Dados
+2. **Configure o banco no `.env`**:
+```env
 DB_HOST=localhost
-DB_PORT=5432
-DB_USER=seu_usuario
-DB_PASSWORD=sua_senha
-DB_NAME=mestra_db
-DB_SSLMODE=disable
+DB_PORT=1433
+DB_NAME=apiGo
+DB_USER=sa
+DB_PASSWORD=SuaSenhaAqui
+PORT=8080
 ```
 
-### 3. Configurações de APIs
-
-Configure as URLs e chaves no `.env.local`:
-
-```bash
-# URL da API .NET
-DOTNET_API_URL=http://localhost:5000/api/messages
-
-# Configurações do WhatsApp
-WHATSAPP_SESSION_NAME=mestra-bot
-JWT_SECRET=sua_chave_jwt_super_secreta
-```
-
-## 🚀 Execução
-
-### Local
+3. **Instale dependências**:
 ```bash
 go mod tidy
+```
+
+4. **Execute**:
+```bash
 go run main.go
 ```
 
-### Docker
-```bash
-docker-compose up mestra-bot
-```
+## 🔥 Exemplo de Uso
 
-## 📡 API Endpoints
+**POST** `http://localhost:8080/api/processar`
 
-### POST /api/v1/send
-Envia uma mensagem via WhatsApp
 ```json
 {
-  "to": "+5511999999999",
-  "message": "Olá! Esta é uma mensagem de teste.",
-  "type": "text"
+  "mensagem": "[30/07/2025 12:04] Mãe: Ontem 31 00 panificadora\n[30/07/2025 12:06] Mãe: 7 00 pão de quijo\n[30/07/2025 12:05] Mãe: 28 de julho\n28 00 feijoada",
+  "autor": "Mãe",
+  "data": "30/07/2025"
 }
 ```
 
-### POST /api/v1/webhook
-Recebe webhooks do WhatsApp (configurado automaticamente)
-
-### GET /api/v1/messages?limit=50
-Busca mensagens armazenadas
-
-### GET /health
-Health check do serviço
-
-## 🔌 Integração com WhatsApp
-
-Este projeto está preparado para integração com bibliotecas como:
-- VenomBot
-- WhatsApp Web.js
-- Baileys
-
-Para implementar a integração real com WhatsApp, você precisará:
-
-1. Escolher uma biblioteca (recomendo VenomBot para Go)
-2. Configurar a sessão do WhatsApp
-3. Implementar os handlers de envio e recebimento
-4. Configurar os webhooks
-
-## 🔄 Comunicação com API .NET
-
-O serviço automaticamente encaminha mensagens recebidas para a API .NET configurada em `DOTNET_API_URL`.
-
-## 🔒 Segurança
-
-- **Nunca** commite arquivos `.env.local` ou similares
-- Use variáveis de ambiente em produção
-- Configure JWT com chaves fortes
-- Use HTTPS em produção
-
-## 🌍 Deploy
-
-Para deploy em cloud:
-
-1. Configure as variáveis de ambiente no seu provedor (AWS, GCP, Azure, etc.)
-2. Use Docker para containerização
-3. Configure load balancer e SSL
-4. Configure monitoramento e logs
-
-Exemplo para deploy no Heroku:
-```bash
-heroku config:set DB_HOST=seu_host_producao
-heroku config:set DB_USER=seu_usuario_producao
-# ... outras variáveis
+**Resposta**:
+```json
+[
+  {
+    "valor": 31.00,
+    "descricao": "panificadora",
+    "data": "2025-07-29"
+  },
+  {
+    "valor": 7.00,
+    "descricao": "pão de quijo",
+    "data": "2025-07-30"
+  },
+  {
+    "valor": 28.00,
+    "descricao": "feijoada",
+    "data": "2025-07-28"
+  }
+]
 ```
+
+## 📍 Endpoints
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/processar` | Processa mensagem e extrai dados |
+| GET | `/api/mensagens` | Lista mensagens salvas |
+| GET | `/api/entradas` | Lista entradas econômicas |
+| GET | `/ping` | Teste de saúde da API |
+
+## 🎯 Integração com VenomBot
+
+O VenomBot (Node.js) monitora grupos WhatsApp e envia mensagens para esta API:
+
+```javascript
+// Exemplo de integração no whatsapp-bot.js
+const response = await fetch('http://localhost:8080/api/processar', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    mensagem: message.body,
+    autor: message.author,
+    data: new Date().toLocaleDateString('pt-BR')
+  })
+});
+```
+
+## 📊 Regras de Extração
+
+| Marcador | Regra |
+|----------|-------|
+| "Hoje" | Usa data da mensagem |
+| "Ontem" | Data da mensagem - 1 dia |
+| "Anteontem" | Data da mensagem - 2 dias |
+| "DD de mês" | Usa essa data como referência |
+| Sem marcador | Fallback para data da mensagem |
+
+## 🗃️ Estrutura do Banco
+
+```sql
+-- Tabelas criadas automaticamente
+CREATE TABLE mensagem_whats_apps (
+  id INT IDENTITY PRIMARY KEY,
+  autor NVARCHAR(255),
+  data DATETIME2,
+  conteudo NTEXT,
+  created_at DATETIME2
+);
+
+CREATE TABLE entradas (
+  id INT IDENTITY PRIMARY KEY,
+  valor FLOAT,
+  descricao NVARCHAR(255),
+  data DATETIME2,
+  created_at DATETIME2
+);
+```
+
+## 🚀 Deploy
+
+Para produção, defina `GIN_MODE=release` no `.env` e compile:
+
+```bash
+go build -o api-mestra main.go
+./api-mestra
+```
+
+---
+
+**Desenvolvido para o projeto MESTRA** 🎯

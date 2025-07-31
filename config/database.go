@@ -4,80 +4,72 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
-	"gorm.io/driver/postgres"
+	"github.com/AppMestra/mestra-golang/models"
+
+	"gorm.io/driver/sqlserver"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
+func LoadConfig() {
+	if os.Getenv("DB_HOST") == "" {
+		os.Setenv("DB_HOST", "localhost")
+	}
+	if os.Getenv("DB_PORT") == "" {
+		os.Setenv("DB_PORT", "1433")
+	}
+	if os.Getenv("DB_NAME") == "" {
+		os.Setenv("DB_NAME", "apiGo")
+	}
+	if os.Getenv("DB_USER") == "" {
+		os.Setenv("DB_USER", "sa")
+	}
+	if os.Getenv("PORT") == "" {
+		os.Setenv("PORT", ":8080")
+	}
+}
+
 func InitDB() {
+	host := os.Getenv("DB_HOST")
+	port := os.Getenv("DB_PORT")
+	database := os.Getenv("DB_NAME")
+	username := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+
+	dsn := fmt.Sprintf("sqlserver://%s:%s@%s:%s?database=%s",
+		username, password, host, port, database)
+
 	var err error
-
-	dbConfig := AppConfig.Database
-
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		dbConfig.Host, dbConfig.Port, dbConfig.User, dbConfig.Password, dbConfig.Name, dbConfig.SSLMode)
-
-	if dbURL := os.Getenv("DATABASE_URL"); dbURL != "" {
-		dsn = dbURL
-	}
-
-	gormConfig := &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	}
-
-	if IsProductionMode() {
-		gormConfig.Logger = logger.Default.LogMode(logger.Silent)
-	}
-
-	DB, err = gorm.Open(postgres.Open(dsn), gormConfig)
+	DB, err = gorm.Open(sqlserver.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal("Erro ao conectar com o banco de dados:", err)
 	}
 
-	sqlDB, err := DB.DB()
+	err = DB.AutoMigrate(&models.MensagemWhatsApp{}, &models.Entrada{})
 	if err != nil {
-		log.Fatal("Erro ao obter instância SQL:", err)
+		log.Fatal("Erro na migração das tabelas:", err)
 	}
 
-	if err = sqlDB.Ping(); err != nil {
-		log.Fatal("Erro ao fazer ping no banco de dados:", err)
-	}
-
-	fmt.Println("Conectado ao banco de dados PostgreSQL com GORM!")
-
-	autoMigrate()
+	log.Println("Conectado ao banco de dados SQL Server com sucesso!")
 }
 
-func getEnvOrDefault(key, defaultValue string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return defaultValue
+func GetDB() *gorm.DB {
+	return DB
 }
 
-func autoMigrate() {
-	type Message struct {
-		ID        uint           `json:"id" gorm:"primaryKey"`
-		From      string         `json:"from" gorm:"column:from_number;not null"`
-		To        string         `json:"to" gorm:"column:to_number;not null"`
-		Body      string         `json:"body" gorm:"not null"`
-		Type      string         `json:"type" gorm:"default:text"`
-		MediaURL  string         `json:"media_url,omitempty" gorm:"column:media_url"`
-		DataHora  time.Time      `json:"data_hora" gorm:"default:CURRENT_TIMESTAMP"`
-		Entrada   bool           `json:"entrada" gorm:"default:true"`
-		CreatedAt time.Time      `json:"created_at"`
-		UpdatedAt time.Time      `json:"updated_at"`
-		DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+func GetPort() string {
+	port := os.Getenv("PORT")
+	if port == "" {
+		return ":8080"
 	}
-
-	err := DB.AutoMigrate(&Message{})
-	if err != nil {
-		log.Fatal("Erro ao executar auto-migração:", err)
+	if port[0] != ':' {
+		return ":" + port
 	}
+	return port
+}
 
-	fmt.Println("Auto-migração executada com sucesso!")
+func IsProductionMode() bool {
+	return os.Getenv("GIN_MODE") == "release"
 }

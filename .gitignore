@@ -1,59 +1,43 @@
-# Binários
+# BÁSICO
+.env
 *.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-main
-mestra-golang
+*.log
+*.out
+*.tmp
+*.bak
 
-# Arquivos de teste
+# GO
+/go.sum
+/bin/
+/build/
+/dist/
+/vendor/
 *.test
 
-# Arquivos de cobertura
-*.out
+# Node.js
+node_modules/
+package-lock.json
 
-# Dependency directories
-vendor/
+# TOKENS (venom)
+tokens/
+venom/session*
 
-# Go workspace file
-go.work
-
-# Arquivos de ambiente SENSÍVEIS - NUNCA VERSIONAR
-.env.local
-.env.production
-.env.staging
-.env.development
-
-# Arquivos de configuração específicos do ambiente
-config.local.*
-
-# Logs
-*.log
-logs/
-
-# Uploads e arquivos temporários
-uploads/*
-!uploads/.gitkeep
-tmp/
-temp/
-
-# Arquivos do sistema operacional
+# SISTEMA
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Arquivos do editor/IDE
-.vscode/
-.idea/
 *.swp
 *.swo
-*~
+*.~*
 
-# Arquivos de backup
-*.bak
-*.backup
+# IDEs
+.vscode/
+.idea/
+*.code-workspace
+
+# DOCKER
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# OUTROS ARQUIVOS GERADOS
+api-mestra.exe
+api-mestra
